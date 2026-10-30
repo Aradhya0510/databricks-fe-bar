@@ -1,0 +1,42 @@
+resources:
+  apps:
+    osa_command_center:
+      name: osa-command-center
+      description: OSA Command Center - store action queue (Lakebase), KPIs, nightly agent briefings, Q&A assistant
+      source_code_path: ../app
+      config:
+        command: ["python", "app.py"]
+        env:
+          - name: DATABRICKS_WAREHOUSE_ID
+            value_from: sql-warehouse
+          - name: SUPERVISOR_ENDPOINT
+            value_from: supervisor-endpoint
+          - name: GENIE_SPACE_ID
+            value_from: genie-space
+          - name: OSA_CATALOG
+            value: serverless_stable_4hkk7k_catalog
+          - name: OSA_SCHEMA
+            value: osa_retail
+      resources:
+        - name: sql-warehouse
+          sql_warehouse:
+            id: ${var.warehouse_id}
+            permission: CAN_USE
+        - name: supervisor-endpoint
+          serving_endpoint:
+            name: ${var.supervisor_endpoint}
+            permission: CAN_QUERY
+        - name: knowledge-assistant-endpoint
+          serving_endpoint:
+            name: ${var.ka_endpoint}
+            permission: CAN_QUERY
+        - name: genie-space
+          genie_space:
+            name: OSA Analyst
+            space_id: ${var.genie_space_id}
+            permission: CAN_RUN
+        - name: postgres
+          postgres:
+            branch: projects/${var.lakebase_project}/branches/${var.lakebase_branch}
+            database: projects/${var.lakebase_project}/branches/${var.lakebase_branch}/databases/databricks-postgres
+            permission: CAN_CONNECT_AND_CREATE

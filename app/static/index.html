@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OSA Command Center</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">◉</span>
+      <div>
+        <h1>OSA Command Center</h1>
+        <p class="sub">On-shelf availability · 10 stores · CA / TX / WI</p>
+      </div>
+    </div>
+    <div class="ctx" id="ctx">loading…</div>
+  </header>
+
+  <nav>
+    <button class="tab active" data-tab="command">Command Center</button>
+    <button class="tab" data-tab="briefings">Nightly Briefings</button>
+    <button class="tab" data-tab="ask">Ask OSA Assistant</button>
+    <button class="tab" data-tab="governance">Governance</button>
+    <select id="region">
+      <option value="ALL">All regions</option><option>West</option><option>South</option><option>Midwest</option>
+    </select>
+  </nav>
+
+  <main>
+    <!-- COMMAND CENTER -->
+    <section id="command" class="panel active">
+      <div class="tiles" id="tiles"></div>
+      <div class="grid2">
+        <div class="card">
+          <h3>On-shelf availability, last 8 weeks</h3>
+          <canvas id="trend" height="120"></canvas>
+          <p class="note">Target ≥ 96.0% (RACI-006). Source: gold_osa_kpi_daily via SQL warehouse; region row filter applies.</p>
+        </div>
+        <div class="card">
+          <h3>Item lookup <span class="pill" id="lat"></span></h3>
+          <input id="itemq" placeholder="Search item id or name, e.g. cola, FOODS_3_090" />
+          <div id="itemres" class="scroll small"></div>
+          <p class="note">Served from Lakebase Postgres (serving.stockout_risk_scores).</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <h3>Tonight's action queue</h3>
+          <div class="filters">
+            <select id="store"><option value="ALL">All stores</option></select>
+            <select id="tier">
+              <option value="ALL">All tiers</option><option>CRITICAL</option><option>HIGH</option>
+              <option>OOS_NOW</option><option>OOS_PHANTOM</option>
+            </select>
+          </div>
+        </div>
+        <div class="scroll"><table id="queue"><thead><tr>
+          <th>#</th><th>Store</th><th>Item</th><th>Tier</th><th>Risk</th><th>Cover (d)</th><th>Action</th>
+          <th>Qty</th><th>$ at risk (3d)</th><th>Why</th><th>Decision</th>
+        </tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- BRIEFINGS -->
+    <section id="briefings" class="panel">
+      <div class="grid-briefs">
+        <div class="card list" id="brieflist"></div>
+        <div class="card md" id="briefbody">Select a briefing.</div>
+      </div>
+    </section>
+
+    <!-- ASK -->
+    <section id="ask" class="panel">
+      <div class="card">
+        <div class="row">
+          <h3>Ask about stores, items, suppliers and company policy</h3>
+          <div class="seg">
+            <label><input type="radio" name="mode" value="assistant" checked /> Assistant (data + documents)</label>
+            <label><input type="radio" name="mode" value="genie" /> Genie (data, shows SQL)</label>
+          </div>
+        </div>
+        <div id="chat" class="chat"></div>
+        <div class="suggest" id="suggest"></div>
+        <form id="askform"><input id="q" placeholder="e.g. Which South stores lost the most revenue to stockouts last week, and what does policy say about late suppliers?" /><button>Ask</button></form>
+      </div>
+    </section>
+
+    <!-- GOVERNANCE -->
+    <section id="governance" class="panel">
+      <div class="card md" id="gov">loading…</div>
+    </section>
+  </main>
+
+  <dialog id="dlg">
+    <form method="dialog" id="dform">
+      <h3 id="dtitle"></h3>
+      <p id="drat" class="small"></p>
+      <label>Decision
+        <select id="daction">
+          <option value="APPROVE">Approve recommended qty</option>
+          <option value="OVERRIDE">Override qty</option>
+          <option value="REJECT">Reject</option>
+          <option value="CYCLE_COUNT_DONE">Cycle count done</option>
+        </select></label>
+      <label>Quantity <input id="dqty" type="number" min="0" /></label>
+      <label>Reason code
+        <select id="dreason"><option value="">—</option><option>PROMO_UPLIFT</option><option>LOCAL_EVENT</option>
+          <option>SHELF_CAPACITY</option><option>QUALITY_ISSUE</option><option>OTHER</option></select></label>
+      <label>Note <input id="dnote" /></label>
+      <menu><button value="cancel">Cancel</button><button id="dsave" value="default">Save decision</button></menu>
+      <p id="dmsg" class="small"></p>
+    </form>
+  </dialog>
+  <script src="/static/app.js"></script>
+</body>
+</html>

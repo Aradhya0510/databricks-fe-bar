@@ -1,0 +1,54 @@
+:root { --bg:#f6f7f9; --card:#fff; --ink:#1b2430; --mut:#6b7684; --line:#e3e7ec; --brand:#ff3621; --ok:#1a7f4b;
+  --warn:#c77700; --bad:#c62828; --info:#2856c6; }
+* { box-sizing: border-box; }
+body { margin:0; font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; background:var(--bg); color:var(--ink); }
+header { display:flex; justify-content:space-between; align-items:center; padding:14px 24px; background:#1b2430; color:#fff; }
+.brand { display:flex; gap:12px; align-items:center; } .logo { color:var(--brand); font-size:28px; }
+h1 { margin:0; font-size:18px; } .sub { margin:0; color:#aab3bf; font-size:12px; }
+.ctx { font-size:12px; color:#cfd6df; text-align:right; }
+nav { display:flex; gap:4px; padding:8px 24px; background:#fff; border-bottom:1px solid var(--line); align-items:center; }
+.tab { border:0; background:none; padding:8px 14px; border-radius:6px; cursor:pointer; color:var(--mut); font-weight:600; }
+.tab.active { background:#fff1ef; color:var(--brand); }
+nav select { margin-left:auto; }
+main { padding:18px 24px; }
+.panel { display:none; } .panel.active { display:block; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin-bottom:16px; }
+.card h3 { margin:0 0 10px; font-size:14px; }
+.tiles { display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-bottom:16px; }
+.tile { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+.tile .k { color:var(--mut); font-size:12px; } .tile .v { font-size:24px; font-weight:700; margin-top:2px; }
+.tile .d { font-size:12px; margin-top:2px; } .up { color:var(--ok); } .down { color:var(--bad); }
+.grid2 { display:grid; grid-template-columns:3fr 2fr; gap:16px; }
+.grid-briefs { display:grid; grid-template-columns:280px 1fr; gap:16px; }
+.row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.scroll { max-height:520px; overflow:auto; } .small { font-size:12px; }
+table { width:100%; border-collapse:collapse; font-size:12.5px; }
+th { text-align:left; color:var(--mut); font-weight:600; border-bottom:1px solid var(--line); padding:6px; position:sticky; top:0; background:#fff; }
+td { border-bottom:1px solid var(--line); padding:6px; vertical-align:top; }
+td.why { max-width:360px; color:#3a4553; }
+.tier { font-weight:700; font-size:11px; padding:2px 6px; border-radius:4px; white-space:nowrap; }
+.CRITICAL { background:#fde8e8; color:var(--bad); } .HIGH { background:#fff3e0; color:var(--warn); }
+.OOS_NOW { background:#ede7f6; color:#5e35b1; } .OOS_PHANTOM { background:#e3f2fd; color:var(--info); }
+.WATCH, .OK { background:#eef1f4; color:var(--mut); }
+button.act { border:1px solid var(--line); background:#fff; border-radius:6px; padding:3px 8px; cursor:pointer; }
+button.act:hover { border-color:var(--brand); color:var(--brand); }
+.done { color:var(--ok); font-weight:600; }
+input, select { padding:7px 9px; border:1px solid var(--line); border-radius:6px; font:inherit; }
+#itemq, #q { width:100%; }
+.note { color:var(--mut); font-size:11.5px; margin:8px 0 0; }
+.pill { font-size:11px; color:var(--mut); font-weight:400; }
+.list .b { padding:8px; border-radius:6px; cursor:pointer; } .list .b:hover, .list .b.sel { background:#fff1ef; }
+.list .b small { color:var(--mut); display:block; }
+.md table { width:auto; } .md td, .md th { border:1px solid var(--line); }
+.chat { min-height:260px; max-height:520px; overflow:auto; padding:8px 0; }
+.msg { margin:10px 0; padding:10px 12px; border-radius:8px; } .msg.u { background:#eef3ff; margin-left:20%; }
+.msg.a { background:#f7f8fa; border:1px solid var(--line); margin-right:10%; }
+.msg pre { background:#1b2430; color:#e8edf3; padding:8px; border-radius:6px; overflow:auto; font-size:12px; }
+.steps { color:var(--mut); font-size:11.5px; margin-top:6px; }
+#askform { display:flex; gap:8px; margin-top:8px; } #askform button { background:var(--brand); color:#fff; border:0; border-radius:6px; padding:0 18px; cursor:pointer; }
+.suggest button { border:1px solid var(--line); background:#fff; border-radius:14px; padding:4px 10px; margin:3px; cursor:pointer; font-size:12px; }
+.seg label { margin-left:12px; font-size:12.5px; }
+dialog { border:1px solid var(--line); border-radius:10px; width:460px; }
+dialog label { display:block; margin:8px 0; font-size:12.5px; } dialog input, dialog select { width:100%; }
+menu { display:flex; gap:8px; justify-content:flex-end; padding:0; }
+#dsave { background:var(--brand); color:#fff; border:0; border-radius:6px; padding:6px 14px; }

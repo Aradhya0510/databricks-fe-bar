@@ -1,0 +1,18 @@
+resources:
+  jobs:
+    osa_release_feed:
+      name: osa_02_release_next_day_feed
+      description: Moves the next staged business day of POS / ERP files into the landing volume, then runs the nightly job.
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+      tasks:
+        - task_key: release_next_day
+          notebook_task:
+            notebook_path: ../src/setup/04_release_daily_feed.py
+        - task_key: nightly_run
+          depends_on: [{ task_key: release_next_day }]
+          run_job_task:
+            job_id: ${resources.jobs.osa_daily.id}

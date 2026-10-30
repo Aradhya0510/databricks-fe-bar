@@ -1,0 +1,6 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+databricks-sdk>=0.81.0
+psycopg[binary]==3.2.3
+psycopg-pool==3.2.4
+openai>=1.60.0

@@ -1,0 +1,9 @@
+resources:
+  schemas:
+    osa_retail:
+      catalog_name: ${var.catalog}
+      name: ${var.schema}
+      comment: >-
+        On-shelf availability (OSA) prototype for a mass-market grocery & general merchandise retailer.
+        Demand = public M5 Forecasting dataset (Walmart, 10 stores in CA/TX/WI, 3,049 items, 2011-2016).
+        Inventory, purchase orders, suppliers and internal documents are synthetic and tagged source=synthetic.

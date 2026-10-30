@@ -1,0 +1,24 @@
+resources:
+  jobs:
+    osa_setup:
+      name: osa_00_setup_land_and_simulate
+      description: >-
+        One-time setup: land the public M5 files, simulate ERP/WMS extracts aligned to M5 demand,
+        and generate the internal document corpus for the Knowledge Assistant.
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+      tasks:
+        - task_key: land_m5
+          notebook_task:
+            notebook_path: ../src/setup/01_land_m5.py
+        - task_key: generate_ops_data
+          depends_on: [{ task_key: land_m5 }]
+          notebook_task:
+            notebook_path: ../src/setup/02_generate_ops_data.py
+        - task_key: generate_internal_docs
+          depends_on: [{ task_key: generate_ops_data }]
+          notebook_task:
+            notebook_path: ../src/setup/03_generate_internal_docs.py

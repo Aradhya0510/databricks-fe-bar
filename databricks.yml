@@ -1,0 +1,56 @@
+bundle:
+  name: osa-retail
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog catalog that holds the project schema
+    default: serverless_stable_4hkk7k_catalog
+  schema:
+    description: Project schema (bronze/silver/gold, models, volumes, functions)
+    default: osa_retail
+  warehouse_id:
+    description: Serverless SQL warehouse used by Genie, the app and SQL tasks
+    default: e0a8cc3b322c1f1d
+  llm_endpoint:
+    description: Foundation model used by agents and ai_query
+    default: databricks-claude-sonnet-5-5
+  llm_fast_endpoint:
+    description: Foundation model for row-level batch generation (ai_query)
+    default: databricks-claude-sonnet-4-5
+  lakebase_project:
+    default: my-fe-bar-project
+  lakebase_branch:
+    default: production
+  lakebase_catalog:
+    description: UC catalog registered on top of the Lakebase databricks_postgres database
+    default: osa_lakebase
+  ka_endpoint:
+    description: Serving endpoint of the Agent Bricks Knowledge Assistant (created by scripts/setup_knowledge_assistant.sh)
+    default: ka-35e9950a-endpoint
+  genie_space_id:
+    description: OSA Analyst Genie Agent (created by scripts/genie_space.py)
+    default: 01f1d4b044db1d4d988e71d91e6decbd
+  supervisor_endpoint:
+    description: Serving endpoint of the OSA Assistant Supervisor Agent (scripts/setup_supervisor_agent.sh)
+    default: mas-2ee5d824-endpoint
+  admin_principals:
+    description: Extra principals with the ADMIN entitlement (comma separated) - the app's service principal
+    default: ${var.app_sp_client_id}
+  app_sp_client_id:
+    description: Service principal of the osa-command-center app (databricks apps get osa-command-center)
+    default: "469361d3-732e-45be-b178-e0f3c33ad5ec"
+  persona_principals:
+    description: Demo persona entitlements, <principal>=<entitlement>, comma separated
+    default: "8e31f1c1-5055-49b6-9a53-5903b724ef03=REGION:South"
+
+targets:
+  # No `mode: development`: it would prefix UC schema names, and every notebook/agent addresses
+  # catalog.schema directly.
+  demo:
+    default: true
+    workspace:
+      profile: fevm-bar
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

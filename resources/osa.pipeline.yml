@@ -1,0 +1,20 @@
+resources:
+  pipelines:
+    osa_lakeflow:
+      name: osa_lakeflow_bronze_silver_gold
+      catalog: ${var.catalog}
+      schema: ${resources.schemas.osa_retail.name}
+      serverless: true
+      photon: true
+      channel: CURRENT
+      continuous: false
+      root_path: ../src/pipeline
+      libraries:
+        - glob:
+            include: ../src/pipeline/transformations/**
+      configuration:
+        osa.catalog: ${var.catalog}
+        osa.schema: ${var.schema}
+        osa.raw_path: /Volumes/${var.catalog}/${var.schema}/raw
+      tags:
+        project: osa-retail

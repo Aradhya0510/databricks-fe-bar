@@ -1,0 +1,22 @@
+@page { size: 13.333in 7.5in; margin: 0; }
+html, body { margin: 0; padding: 0; font-family: -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif; color: #1b2430; }
+header#title-block-header { display: none; }
+section.level1 { box-sizing: border-box; width: 13.333in; height: 7.5in; padding: 0.55in 0.75in 0.4in; page-break-after: always;
+  break-after: page; overflow: hidden; position: relative; border-top: 10px solid #ff3621; }
+section.level1:first-of-type { background: #1b2430; color: #fff; border-top: 0; padding-top: 1.6in; }
+section.level1:first-of-type h1 { font-size: 54px; color: #fff; }
+section.level1:first-of-type h3 { color: #ffb4a8; font-size: 26px; font-weight: 500; }
+section.level1:first-of-type strong { color: #ffd2cb; }
+h1 { font-size: 34px; margin: 0 0 14px; color: #1b2430; }
+h3 { margin: 0 0 18px; }
+p, li { font-size: 17px; line-height: 1.42; }
+li { margin: 4px 0; }
+table { border-collapse: collapse; font-size: 15.5px; margin: 10px 0 14px; width: 100%; }
+th { text-align: left; background: #f2f4f7; border-bottom: 2px solid #d5dae1; padding: 6px 10px; }
+td { border-bottom: 1px solid #e3e7ec; padding: 6px 10px; }
+blockquote { border-left: 5px solid #ff3621; margin: 10px 0; padding: 6px 16px; background: #fff6f4; font-size: 15px; }
+blockquote p { font-size: 15px; }
+em { color: #5d6875; }
+code { background: #f2f4f7; padding: 1px 4px; border-radius: 3px; font-size: 90%; }
+section.level1::after { content: "OSA Command Center · Databricks prototype"; position: absolute; bottom: 0.22in; right: 0.75in;
+  font-size: 11px; color: #8a94a2; }

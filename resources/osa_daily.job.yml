@@ -1,0 +1,80 @@
+resources:
+  jobs:
+    osa_daily:
+      name: osa_01_nightly_osa_intelligence
+      description: >-
+        Nightly OSA run: govern -> Lakeflow ingest/transform -> (re)train if needed -> pull store decisions back from
+        Lakebase -> score + GenAI recommendations -> governed agent tools -> agentic intelligence briefings ->
+        refresh Lakebase serving tables.
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: admin_principals
+          default: ${var.admin_principals}
+        - name: persona_principals
+          default: ${var.persona_principals}
+        - name: lakebase_catalog
+          default: ${var.lakebase_catalog}
+        - name: force_retrain
+          default: "false"
+      tags:
+        project: osa-retail
+      tasks:
+        - task_key: governance_setup
+          notebook_task:
+            notebook_path: ../src/governance/01_governance_setup.py
+
+        - task_key: lakeflow_pipeline
+          depends_on: [{ task_key: governance_setup }]
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.osa_lakeflow.id}
+
+        - task_key: governance_apply
+          depends_on: [{ task_key: lakeflow_pipeline }]
+          notebook_task:
+            notebook_path: ../src/governance/02_governance_apply.py
+
+        - task_key: train_model
+          depends_on: [{ task_key: lakeflow_pipeline }]
+          notebook_task:
+            notebook_path: ../src/ml/01_train_stockout_model.py
+
+        - task_key: ingest_app_actions
+          depends_on: [{ task_key: lakeflow_pipeline }]
+          notebook_task:
+            notebook_path: ../src/lakebase/01_ingest_app_actions.py
+
+        - task_key: score_and_recommend
+          depends_on: [{ task_key: train_model }, { task_key: ingest_app_actions }]
+          notebook_task:
+            notebook_path: ../src/ml/02_score_and_recommend.py
+            base_parameters:
+              llm_fast_endpoint: ${var.llm_fast_endpoint}
+
+        - task_key: agent_tools
+          depends_on: [{ task_key: score_and_recommend }]
+          notebook_task:
+            notebook_path: ../src/agents/01_agent_tools.py
+
+        - task_key: intelligence_briefings
+          depends_on: [{ task_key: agent_tools }]
+          notebook_task:
+            notebook_path: ../src/agents/02_intelligence_report_agent.py
+            base_parameters:
+              llm_endpoint: ${var.llm_endpoint}
+              ka_endpoint: ${var.ka_endpoint}
+
+        - task_key: refresh_lakebase_serving
+          depends_on: [{ task_key: intelligence_briefings }]
+          notebook_task:
+            notebook_path: ../src/lakebase/02_refresh_synced_tables.py
+
+        - task_key: lakebase_app_grants
+          depends_on: [{ task_key: refresh_lakebase_serving }]
+          notebook_task:
+            notebook_path: ../src/lakebase/00_grant_app_access.py
+            base_parameters:
+              lakebase_project: ${var.lakebase_project}
+              app_sp_client_id: ${var.app_sp_client_id}
