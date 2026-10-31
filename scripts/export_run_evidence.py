@@ -92,7 +92,7 @@ def pipeline_md(task_run, profile):
                sum(coalesce(details:flow_progress.metrics.num_output_rows::bigint, 0)) AS output_rows,
                sum(coalesce(details:flow_progress.data_quality.dropped_records::bigint, 0)) AS dropped_by_expectations,
                round(timestampdiff(MILLISECOND, min(timestamp), max(timestamp)) / 1000, 1) AS seconds
-        {base} AND origin.flow_name IS NOT NULL GROUP BY 1 ORDER BY min(timestamp)""", profile)
+        {base} AND origin.flow_name IS NOT NULL AND origin.flow_name <> 'missingFlowName' GROUP BY 1 ORDER BY min(timestamp)""", profile)
     lines.append(md_rows(flows))
     exp = sql_rows(f"""SELECT element_at(split(x.dataset, '\\\\.'), -1) AS dataset, x.name AS expectation,
                sum(x.passed_records) AS passed, sum(x.failed_records) AS failed
@@ -152,7 +152,9 @@ def main():
         kind = "pipeline" if "pipeline_task" in t else "notebook" if "notebook_task" in t else "other"
         dur = round((t.get("execution_duration") or t.get("run_duration") or 0) / 1000)
         fname = f"{t['task_key']}.md"
-        if res in ("SUCCESS", "FAILED") or kind == "pipeline":
+        if kind == "other":
+            fname = f"(run_job_task -> child run {t.get('run_job_output', {}).get('run_id', 'see job runs')})"
+        elif res in ("SUCCESS", "FAILED"):
             try:
                 body = notebook_md(t, a.profile) if kind == "notebook" else pipeline_md(t, a.profile)
                 with open(os.path.join(a.out_dir, fname), "w") as fh:

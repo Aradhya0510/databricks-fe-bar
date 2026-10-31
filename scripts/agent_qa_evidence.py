@@ -36,26 +36,42 @@ def invoke(endpoint, question):
     for item in r.get("output", []):
         t = item.get("type")
         if t == "message":
-            text += [c.get("text", "") for c in item.get("content", []) if c.get("text")]
+            msg = "".join(c.get("text", "") for c in item.get("content", []) if c.get("text")).strip()
+            if msg:
+                text.append(msg)
         elif t == "function_call":
             steps.append(f"{item.get('name')}({item.get('arguments', '')[:160]})")
-    return {"answer": "\n".join(text).strip(), "steps": steps, "secs": round(time.time() - t0, 1)}
+    # Supervisor streams sub-agent outputs as intermediate messages; the last message is the synthesised answer
+    return {"answer": text[-1] if text else "", "intermediate": text[:-1], "steps": steps, "secs": round(time.time() - t0, 1)}
 
 
 def norm(s):
     return re.sub(r"[^a-z0-9%$.]+", " ", s.lower())
 
 
+SYNONYMS = {"lambda": ["lambda", "λ"]}
+
+
 def fact_hits(answer, fact):
+    """Share of the expected fact's key terms present in the answer (numbers compared as values: 96 == 96.0)."""
     keys = [k for k in re.findall(r"\$?\d[\d,.]*%?|[A-Z]{3,}_\d|[a-z]{4,}", fact.replace(",", "")) if k.lower() not in
             {"within", "more", "than", "above", "plus", "with", "days", "long"}]
     a = norm(answer.replace(",", ""))
-    found = [k for k in keys if norm(k).strip() in a]
+    nums = {float(x) for x in re.findall(r"\d+(?:\.\d+)?", answer.replace(",", ""))}
+    found = []
+    for k in keys:
+        num = re.sub(r"[^\d.]", "", k)
+        if num and re.fullmatch(r"\d+(\.\d+)?", num):
+            hit = float(num) in nums
+        else:
+            hit = any(norm(s).strip() in a or s in answer for s in SYNONYMS.get(k.lower(), [k]))
+        found.append(k) if hit else None
     return len(found) / max(len(keys), 1), keys
 
 
 os.makedirs(ROOT, exist_ok=True)
-evalq = json.loads(cli("fs", "cat", f"dbfs:{DOCS_EVAL}", raw=True))
+RUN_KA, RUN_SUP = "--sup-only" not in sys.argv, "--ka-only" not in sys.argv
+evalq = [] if not RUN_KA else json.loads(cli("fs", "cat", f"dbfs:{DOCS_EVAL}", raw=True))
 out = [f"# Knowledge Assistant evaluation — `{KA}`\n",
        f"*{time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime())}. Questions and expected facts from `docs/eval_questions.json`; "
        "a question passes when ≥ 80% of the expected fact's key terms/numbers appear in the answer.*\n"]
@@ -68,8 +84,11 @@ for q in evalq:
     out += [f"## {'✅' if ok else '❌'} {q['question']}\n", f"*Expected fact:* {q['expected_fact']} · *coverage* {cov:.0%} · {r['secs']}s\n",
             "> " + r["answer"].replace("\n", "\n> ") + "\n"]
 out.insert(2, f"**Score: {passed}/{len(evalq)} questions answered with the expected fact.**\n")
-open(os.path.join(ROOT, "knowledge_assistant_eval.md"), "w").write("\n".join(out))
-print(f"KA: {passed}/{len(evalq)}")
+if RUN_KA:
+    open(os.path.join(ROOT, "knowledge_assistant_eval.md"), "w").write("\n".join(out))
+    print(f"KA: {passed}/{len(evalq)}")
+if not RUN_SUP:
+    sys.exit(0)
 
 QUESTIONS = [
     "What was on-shelf availability by region over the last 7 days compared with the prior 7 days?",
@@ -84,7 +103,11 @@ out = [f"# Supervisor Agent (OSA Assistant) Q&A — `{SUP}`\n",
        "routing between the Genie Agent (governed SQL), the Knowledge Assistant (internal documents) and UC function tools.*\n"]
 for q in QUESTIONS:
     r = invoke(SUP, q)
-    out += [f"## Q: {q}\n", f"*{r['secs']}s · steps: {' → '.join(r['steps']) if r['steps'] else '(routing not exposed in response)'}*\n",
-            r["answer"] + "\n", "---\n"]
+    out += [f"## Q: {q}\n", f"*{r['secs']}s · routed to: {' → '.join(r['steps']) if r['steps'] else '(answered directly)'}*\n",
+            "**Final answer:**\n", r["answer"] + "\n"]
+    if r.get("intermediate"):
+        out += ["<details><summary>Sub-agent outputs (Genie / Knowledge Assistant)</summary>\n",
+                "\n\n".join(m[:3000] for m in r["intermediate"]) + "\n", "</details>\n"]
+    out.append("---\n")
     print(f"SUP: {q[:60]}… {r['secs']}s steps={len(r['steps'])}")
 open(os.path.join(ROOT, "supervisor_qa.md"), "w").write("\n".join(out))

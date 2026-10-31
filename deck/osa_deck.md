@@ -65,8 +65,9 @@ day** and **77 % of them are false alarms**, so stores ignore it.
 **Plus, not counted above:** fewer emergency DSD deliveries (8 % premium + $45/store/day), supplier chargebacks
 backed by evidence (late PO → stockout → $ lost), and store labour saved on manual gap scans.
 
-**Payback:** platform run cost for the nightly loop is serverless and scales to zero; recovered margin at pilot scale
-covers it many times over. *(Assumptions are explicit and adjustable — see appendix.)*
+**Run cost:** the whole nightly loop (ingest → govern → score → explain → brief → serve) runs in **~21 minutes on
+serverless compute** that scales to zero between runs; pilot week 1 baselines the actual \$ from `system.billing` against
+the recovered margin above. *(Assumptions are explicit and adjustable — see appendix.)*
 
 ---
 
@@ -91,12 +92,17 @@ risk**. Store managers approve or override with a reason code; overrides > 50 % 
 
 # What leaders see at 7 am (agent-written, numbers verified)
 
-> **Headline:** South region OSA held at 93.6 % last week, but 210 critical alerts put \$2.4k of sales at risk in the
-> next 3 days — most from two late pantry suppliers …
+> **Headline:** Lost revenue fell to \$40,235 in the last 7 days, down \$10,332 from \$50,567 the week before.
+> Tonight's queue has 1,345 items with \$15,649 of 3-day revenue at risk, and 732 of them (about \$9,459) are Critical
+> or already out of stock and need Emergency DSD.
 >
-> **Recommended actions:** 1. Category buyer to escalate *Coastal Canning Co* per POL-SUP-003 (3+ days late) …
+> **Top risk:** TX_2, Tortilla Chips #120: cycle count for suspected phantom inventory. The system shows 231 units but
+> there are no recent sales. Reorder 24 units if the shelf is empty …
+>
+> **Action 3:** Category buyers: escalate the late POs, starting with SUP009, SUP018 and SUP010. Policy: POL-SUP-003.
 
-*(Excerpt — full briefings in `evidence/agents/briefings.md`.)*
+*Verbatim excerpt of the executive briefing for business date 2016-05-23, written by the agent; all four briefings
+are in `evidence/agents/briefings.md`.*
 
 - One executive and three regional briefings every night, written by a **tool-calling agent** that may only use
   governed data functions and our policy library — it cites the procedure (POL-SUP-003, GUIDE-DSD-005 …).
@@ -141,9 +147,14 @@ POS/ERP extracts, and a control group of 10 comparable stores.
 - **Impact model:** recovered = baseline lost sales × share covered by the daily top-500 list (back-test: 33.8 %) ×
   share prevented by acting 1–3 days early (assumption: 50 %). Chain view uses the industry 4 % lost-sales rate
   instead of the M5 5.9 %, i.e. conservative.
-- **Caveat (honest):** inventory, POs and suppliers are *simulated* from the real sales. Their signals are cleaner than a
-  real ERP's, so the model's precision here is an upper bound; the pilot's shadow run (weeks 1–3) re-baselines it on
-  the customer's data before any commitment.
+- **Forward check on unseen real sales (23–24 May 2016):** items scored *Critical* on 22 May sold at **26 %** of normal
+  demand vs **95 %** for items scored OK; among fast movers, **66 %** of predicted-critical items sold nothing on both
+  days vs **7 %** of the rest.
+- **Caveat (honest):** sales are real, but inventory, POs and suppliers are *simulated* — and the simulator places a late
+  PO or phantom stock in front of each real stockout so it is explainable. Supply-side signals are therefore cleaner
+  than a real ERP's, and the model's precision here is an **upper bound**; the pilot's shadow run (weeks 1–3)
+  re-baselines it on the customer's data before any commitment. The impact model already halves the effect (50 %
+  prevention) and uses the industry lost-sales rate.
 
 # Appendix B — platform components used
 

@@ -64,6 +64,31 @@ pipeline event-log metrics and data-quality results, model metrics vs. baseline,
 benchmark results, Supervisor-Agent Q&A transcripts, app API responses, Lakebase round-trip, and agent-written
 briefings with their evaluation scores.
 
+## Results at a glance
+
+| | Result | Evidence |
+|---|---|---|
+| Baseline (52 wks, 10 stores) | OSA 90.4 %, $2.82 M lost to stockouts (5.9 % of sales) | `evidence/runs/*/lakeflow_pipeline.md`, deck appendix |
+| Model vs. today's rule (test 1–19 May 2016) | ROC AUC 0.953 vs 0.768 · PR AUC 0.824 vs 0.349 · precision of top-500 alerts/day 96 % vs 48 % · lost revenue covered 33.8 % vs 14.2 % | `evidence/runs/00c_*/train_model.md` |
+| Forward check on unseen real sales | Critical items sold at 26 % of normal demand vs 95 % for OK items | `evidence/ml/forward_check.md` |
+| Governance | South persona sees only South rows; supplier terms, cost and e-mails masked; bronze denied | `evidence/governance/persona_check.md` |
+| Genie Agent | benchmark answers vs reference SQL | `evidence/genie/benchmark.md` |
+| Knowledge Assistant | 10/10 policy questions answered with the expected fact | `evidence/agents/knowledge_assistant_eval.md` |
+| Briefing agent | 4 briefings/night; 7 scorers (incl. numeric grounding) at 100 % | `evidence/runs/00d_*/intelligence_briefings.md` |
+| App + Lakebase | action-queue reads ~300 ms end-to-end, typeahead < 20 ms in Postgres; decisions round-trip Lakebase → UC → Delta | `evidence/app/api_responses.md`, `evidence/lakebase/roundtrip.md` |
+
+**Honest caveat.** Sales and stockout outcomes are real (M5), but inventory, POs and suppliers are simulated, and the
+simulator places a late PO or phantom stock in front of each real stockout so it is explainable. Supply-side features
+are therefore cleaner than a real ERP's: treat model precision as an upper bound. The business case halves the effect
+(50 % prevention) and the chain view uses the industry 4 % lost-sales rate.
+
+**Known platform limitations hit during the build** (and how they were handled):
+* The workspace only allows default-storage catalogs to be created in the UI → the project uses a dedicated schema.
+* Account tag-policy limit reached → governed keys `layer` / `domain` / `class.*` plus free keys `osa_data_origin`.
+* Workspace-local groups cannot be used in UC grants → entitlement table (ABAC) + grants to real principals.
+* Attaching UC functions as Supervisor-Agent tools failed with "Failed to register UC function tool" → the Supervisor
+  routes to Genie + Knowledge Assistant; the same governed UC functions are the briefing agent's tools.
+
 ## Reproduce
 
 ```bash

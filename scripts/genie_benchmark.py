@@ -72,23 +72,37 @@ def values(rows):
     return sorted(tuple(norm(v) for v in r) for r in (rows or [[]])[1:])
 
 
-lines, score = [], []
+def column_match(got, ref):
+    """Every reference column has a Genie column with the same multiset of values (extra Genie columns allowed)."""
+    if not got or not ref or len(got) != len(ref):
+        return False
+    gcols = [sorted(str(v[0]) for v in values([[r[i]] for r in got])) for i in range(len(got[0]))]
+    rcols = [sorted(str(v[0]) for v in values([[r[i]] for r in ref])) for i in range(len(ref[0]))]
+    return all(rc in gcols for rc in rcols)
+
+
+lines, score, semantic = [], [], []
 for q, ref in benchmarks + EXTRA:
     g = ask(q)
     expected = run_sql(ref) if ref else None
     match = None if expected is None else (values(g["result"]) == values(expected))
+    cmatch = None if expected is None else (match or column_match(g["result"], expected))
     score.append(match)
-    lines += [f"## {q}\n", f"*Genie status: {g['status']} · {g['secs']}s · "
-              f"{'match: ✅' if match else 'match: ❌' if match is False else 'open question (no reference SQL)'}*\n"]
+    semantic.append(cmatch)
+    verdict = ("exact match ✅" if match else "same answer, extra columns ✅" if cmatch else "mismatch ❌"
+               if match is False else "open question (no reference SQL)")
+    lines += [f"## {q}\n", f"*Genie status: {g['status']} · {g['secs']}s · {verdict}*\n"]
     if g["text"]:
         lines.append("**Genie answer:** " + g["text"].strip().replace("\n", " ") + "\n")
     lines.append(f"**Genie SQL:**\n\n```sql\n{g['sql'] or '(none)'}\n```\n\n**Genie result:**\n\n{md(g['result'])}\n")
     if ref:
         lines.append(f"<details><summary>Reference SQL and result</summary>\n\n```sql\n{ref}\n```\n\n{md(expected)}\n\n</details>\n")
 graded = [s for s in score if s is not None]
+sem = [s for s in semantic if s is not None]
 header = [f"# Genie Agent benchmark — space `{SPACE}`\n",
           f"*Run {time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime())} via the Genie Conversation API.*\n",
-          f"**Result-set match vs reference SQL: {sum(graded)}/{len(graded)}** "
+          f"**Exact result-set match vs reference SQL: {sum(graded)}/{len(graded)}** · "
+          f"**same answer (reference columns all present, extra columns allowed): {sum(sem)}/{len(sem)}** "
           f"(numeric values compared at 0.1 precision, row order ignored). "
           f"{len(score) - len(graded)} additional open-ended questions shown for answer quality.\n"]
 os.makedirs(os.path.dirname(OUT), exist_ok=True)

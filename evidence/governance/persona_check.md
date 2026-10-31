@@ -1,6 +1,6 @@
 # Governance proof: same queries, two identities
 
-*Generated 2026-10-30 23:31:51 UTC against `serverless_stable_4hkk7k_catalog.osa_retail` on warehouse `e0a8cc3b322c1f1d`.*
+*Generated 2026-10-31 00:33:29 UTC against `serverless_stable_4hkk7k_catalog.osa_retail` on warehouse `e0a8cc3b322c1f1d`.*
 
 * **ADMIN** – the build identity (entitlement `ADMIN`).
 * **PERSONA** – service principal `osa-demo-south-store-manager` (`8e31f1c1-5055-49b6-9a53-5903b724ef03`), entitlement `REGION:South`, SELECT on curated gold/dim tables only.
@@ -35,15 +35,15 @@ SELECT region, count(*) AS rows, round(sum(lost_revenue)) AS lost_revenue FROM s
 
 | region | rows | lost_revenue |
 |---|---|---|
-| Midwest | 40761 | 3676838.0 |
-| South | 40761 | 3828097.0 |
-| West | 54348 | 6331850.0 |
+| Midwest | 40803 | 3680862.0 |
+| South | 40803 | 3831367.0 |
+| West | 54404 | 6337374.0 |
 
 **PERSONA (South store manager):**
 
 | region | rows | lost_revenue |
 |---|---|---|
-| South | 40761 | 3828097.0 |
+| South | 40803 | 3831367.0 |
 
 ## Row filter: stockout events visible per region (gold_stockout_events)
 
@@ -55,15 +55,15 @@ SELECT region, count(*) AS events FROM serverless_stable_4hkk7k_catalog.osa_reta
 
 | region | events |
 |---|---|
-| Midwest | 120701 |
-| South | 129336 |
-| West | 194083 |
+| Midwest | 120863 |
+| South | 129474 |
+| West | 194306 |
 
 **PERSONA (South store manager):**
 
 | region | events |
 |---|---|
-| South | 129336 |
+| South | 129474 |
 
 ## Column masks: supplier commercial terms (dim_supplier)
 

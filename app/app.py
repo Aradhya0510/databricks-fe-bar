@@ -260,13 +260,18 @@ def ask_supervisor(question: str):
     client = w.serving_endpoints.get_open_ai_client()
     t0 = time.time()
     resp = client.responses.create(model=SUPERVISOR_ENDPOINT, input=[{"role": "user", "content": question}])
-    steps = []
+    steps, messages = [], []
     for item in resp.output or []:
         kind = getattr(item, "type", "")
         if kind == "function_call":
             steps.append({"tool": getattr(item, "name", ""), "arguments": getattr(item, "arguments", "")[:300]})
-    text = resp.output_text if hasattr(resp, "output_text") else str(resp)
-    return {"mode": "assistant", "answer": text, "steps": steps, "latency_s": round(time.time() - t0, 1)}
+        elif kind == "message":
+            text = "".join(getattr(c, "text", "") or "" for c in getattr(item, "content", []) or [])
+            if text.strip():
+                messages.append(text.strip())
+    # the Supervisor streams sub-agent outputs as intermediate messages; the last one is the synthesised answer
+    answer = messages[-1] if messages else (resp.output_text if hasattr(resp, "output_text") else "")
+    return {"mode": "assistant", "answer": answer, "steps": steps, "latency_s": round(time.time() - t0, 1)}
 
 
 def ask_genie(question: str, conversation_id: Optional[str]):

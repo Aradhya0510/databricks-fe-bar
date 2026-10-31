@@ -59,7 +59,13 @@ text = [f"# Forward check on real, unseen Walmart sales\n",
         "## By predicted risk tier\n", md(cols, rows), "\n",
         "## Fast movers (≥ 1 unit/day normally): any zero-sales outcome over the released days\n", md(cols2, rows2), "\n",
         "*Reading:* if the model ranks risk correctly, higher tiers show a higher zero-sales share and lower sell-through "
-        "than lower tiers on the following real days.\n"]
+        "than lower tiers on the following real days.\n",
+        "**Caveat — read before quoting these numbers.** The sales outcomes are real, but the supply-side inputs are "
+        "simulated: to make each real stockout explainable, the ERP simulator (`src/setup/02_generate_ops_data.py`) "
+        "places a late supplier PO (≈75 %) or phantom stock (≈25 %) in front of it. The overdue-PO features therefore "
+        "carry planted information about upcoming stockouts that a real ERP carries only partially. Treat the lift "
+        "here (and the test metrics in training) as an **upper bound**; the pilot's shadow run re-baselines precision on "
+        "the customer's real ERP feed.\n"]
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 open(OUT, "w").write("\n".join(text))
 print("\n".join(text))
